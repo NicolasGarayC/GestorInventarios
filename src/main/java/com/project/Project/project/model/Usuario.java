@@ -1,12 +1,19 @@
 package com.project.Project.project.model;
 
+import com.project.Project.project.repository.RolRepository;
 import jakarta.persistence.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "usuarios")
 public class Usuario {
+
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -34,7 +41,6 @@ public class Usuario {
     @Column(name = "fecha_ult_cambio_clave")
     private Date fechaUltimoCambioClave;
 
-
     public Usuario() {
     }
 
@@ -47,7 +53,17 @@ public class Usuario {
         this.cambiarClave = cambiarClave;
         this.fechaUltimoCambioClave = fechaUltimoCambioClave;
     }
+    @ManyToMany
+    @JoinTable(
+            name = "usuario_rol",
+            joinColumns = @JoinColumn(name = "idusuario"),
+            inverseJoinColumns = @JoinColumn(name = "idrol")
+    )
+    private Set<Rol> roles = new HashSet<>();
 
+    public Set<Rol> getRoles() {
+        return roles;
+    }
 
     public Integer getId() {
         return id;

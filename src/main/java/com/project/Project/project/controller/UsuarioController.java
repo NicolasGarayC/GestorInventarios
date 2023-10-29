@@ -2,19 +2,48 @@ package com.project.Project.project.controller;
 import com.project.Project.project.model.Usuario;
 import com.project.Project.project.model.UsuarioDAO;
 import com.project.Project.project.model.UsuarioRol;
+import com.project.Project.project.payload.request.LoginRequest;
+import com.project.Project.project.payload.response.UserInfoResponse;
 import com.project.Project.project.repository.UsuarioRepository;
 import com.project.Project.project.repository.UsuarioRolRepository;
+import com.project.Project.project.security.services.UserDetailsImpl;
 import com.project.Project.project.service.UsuarioService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import com.project.Project.project.security.jwt.JwtUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/api/auth")
 public class UsuarioController {
+
+
+    @Autowired
+    JwtUtils jwtUtils;
+
+    @Autowired
+    AuthenticationManager authenticationManager;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -81,20 +110,25 @@ public class UsuarioController {
         }
     }
 
-    @PostMapping("/authUsuario")
-    public ResponseEntity<String> validarUsuario(@RequestBody Map<String, Object> credenciales) {
-        try {
-            String correo = (String) credenciales.get("correo");
-            String passwd = (String) credenciales.get("passwd");
+    @PostMapping("/signin")
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        Authentication authentication = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-            if (usuarioService.validarUsuario(correo, passwd)) {
-                return ResponseEntity.ok("Usuario Autenticado.");
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas.");
-            }
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error en el servidor: " + e.getMessage());
-        }
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .body(new UserInfoResponse(userDetails.getId(),
+                        userDetails.getUsername(),
+                        userDetails.getEmail(),
+                        roles));
     }
 }
