@@ -117,12 +117,12 @@ public class CompraService {
         Compra compra = compraRepository.findById(idCompra)
                 .orElseThrow(() -> new RuntimeException("Error, No existe una compra con este id."));
 
-        // Verificar si han pasado más de tres meses desde la fecha de la compra
+
         Date fechaActual = new Date();
         long diferenciaEnMiliseg = fechaActual.getTime() - compra.getFechacompra().getTime();
         long diasDiferencia = TimeUnit.MILLISECONDS.toDays(diferenciaEnMiliseg);
 
-        if (diasDiferencia > (30 * 3)) { // Asumiendo aproximadamente 30 días por mes
+        if (diasDiferencia > (30 * 3)) {    
             throw new RuntimeException("No se puede realizar la devolución, han pasado más de tres meses desde la compra.");
         }
         if(detalles.isEmpty()){
