@@ -109,8 +109,8 @@ public class UsuarioController {
             String passwd = (String) credenciales.get("passwd");
 
             if (usuarioService.validarUsuario(correo, passwd)) {
-                String token = jwtUtil.generateToken(correo); // Genera el token con el correo como identificador
-                return ResponseEntity.ok(token); // Retorna el token
+                String token = jwtUtil.generateToken(correo);
+                return ResponseEntity.ok(token);
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas.");
             }

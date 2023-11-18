@@ -12,8 +12,7 @@ import java.util.function.Function;
 @Component
 public class JWTUtil {
 
-    private String SECRET_KEY = "tu_clave_secreta";
-
+    private String SECRET_KEY = "9vApxLk5G3PAsJrM067zWq4bR2zO2q5T3tC0A5a6S";
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -36,10 +35,16 @@ public class JWTUtil {
     }
 
     public String generateToken(String username) {
-        return Jwts.builder().setSubject(username)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 horas
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
+        try{
+            return Jwts.builder().setSubject(username)
+                    .setIssuedAt(new Date(System.currentTimeMillis()))
+                    .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 horas
+                    .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
+
+        }catch (Exception e){
+            throw new RuntimeException("El usuario se ha inhabilitado por intentos de sesion fallidos. Se ha enviado un token a su correo para habilitar su usuario");
+
+        }
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
