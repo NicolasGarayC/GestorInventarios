@@ -30,7 +30,6 @@ public class CompraController {
             compraService.guardarCompraYRelaciones(compraArticulosDTO);
             return new ResponseEntity<>("Compra y artículo agregados exitosamente", HttpStatus.OK);
         } catch (RuntimeException e) {
-            errorLoggingService.logError("Error en CompraController - registrarCompra", e, compraArticulosDTO.toString());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

@@ -1,4 +1,5 @@
 package com.project.Project.project.controller;
+import com.project.Project.project.Util.JWTUtil;
 import com.project.Project.project.model.Usuario;
 import com.project.Project.project.model.UsuarioDAO;
 import com.project.Project.project.model.UsuarioRol;
@@ -35,6 +36,9 @@ public class UsuarioController {
 
     @Autowired
     private TokenGenerator tokenGenerator;
+
+    @Autowired
+    private JWTUtil jwtUtil;
 
     @GetMapping("/getusuario/{id}")
     public ResponseEntity<Usuario> getUsuarioById(@PathVariable int id) {
@@ -99,12 +103,14 @@ public class UsuarioController {
 
     @PostMapping("/authUsuario")
     public ResponseEntity<String> validarUsuario(@RequestBody Map<String, Object> credenciales) {
+
         try {
             String correo = (String) credenciales.get("correo");
             String passwd = (String) credenciales.get("passwd");
 
             if (usuarioService.validarUsuario(correo, passwd)) {
-                return ResponseEntity.ok("Usuario Autenticado.");
+                String token = jwtUtil.generateToken(correo); // Genera el token con el correo como identificador
+                return ResponseEntity.ok(token); // Retorna el token
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas.");
             }
@@ -113,7 +119,6 @@ public class UsuarioController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }
-
     @PostMapping("/confirmarregistro")
     public ResponseEntity<String> confirmarRegistro(@RequestBody Map<String, Object> credenciales) {
         try {
