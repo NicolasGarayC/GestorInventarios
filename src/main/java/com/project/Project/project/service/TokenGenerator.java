@@ -7,7 +7,7 @@ import java.util.Random;
 @Service
 public class TokenGenerator {
 
-    public static int generateToken() {
+    public static int generateTokenE() {
         Random random = new Random();
         StringBuilder number = new StringBuilder();
 

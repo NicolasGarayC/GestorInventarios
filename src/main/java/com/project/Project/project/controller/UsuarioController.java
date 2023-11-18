@@ -6,21 +6,21 @@ import com.project.Project.project.model.UsuarioRol;
 import com.project.Project.project.repository.UsuarioRepository;
 import com.project.Project.project.repository.UsuarioRolRepository;
 import com.project.Project.project.service.TokenGenerator;
-import com.project.Project.project.service.TokenGenerator;
 import com.project.Project.project.service.UsuarioService;
 import com.project.Project.project.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
+
+    private static final Logger logger = LoggerFactory.getLogger(UsuarioController.class);
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -79,7 +79,7 @@ public class UsuarioController {
         if(!(valid.equals("ok"))){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + valid);
         }
-        int token = tokenGenerator.generateToken();
+        int token = tokenGenerator.generateTokenE();
         try{
             emailService.sendSimpleMessage(correo,"Token Registro Gestion de Inventarios","Este es su token de confirmación de registro, ingreselo en la aplicación: " + token);
         }catch(Exception e){
@@ -103,22 +103,27 @@ public class UsuarioController {
 
     @PostMapping("/authUsuario")
     public ResponseEntity<String> validarUsuario(@RequestBody Map<String, Object> credenciales) {
-
         try {
+            logger.debug("Iniciando validación de usuario");
             String correo = (String) credenciales.get("correo");
             String passwd = (String) credenciales.get("passwd");
+            logger.debug("Credenciales recibidas: correo=" + correo);
 
             if (usuarioService.validarUsuario(correo, passwd)) {
+                logger.debug("Credenciales válidas, generando token");
                 String token = jwtUtil.generateToken(correo);
+                logger.debug("Token generado: " + token);
                 return ResponseEntity.ok(token);
             } else {
+                logger.debug("Credenciales inválidas");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas.");
             }
-
         } catch (Exception e) {
+            logger.error("Error en validarUsuario", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }
+
     @PostMapping("/confirmarregistro")
     public ResponseEntity<String> confirmarRegistro(@RequestBody Map<String, Object> credenciales) {
         try {

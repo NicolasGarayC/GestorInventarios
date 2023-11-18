@@ -79,7 +79,7 @@ public class UsuarioService {
                 if(usuario.getIntentosFallidos()>=3){
                     usuario.setEstado("Inhabilitado");
                     usuarioRepository.save(usuario);
-                    Integer token = tokenGenerator.generateToken();
+                    Integer token = tokenGenerator.generateTokenE();
                     usuario.setToken(token);
                     usuarioRepository.save(usuario);
                     try{
@@ -115,7 +115,7 @@ public class UsuarioService {
         Optional<Usuario> usuarioOptional = usuarioRepository.findByCorreo(correo);
         if(usuarioOptional.isPresent()){
             Usuario usuario = usuarioOptional.get();
-            Integer token = tokenGenerator.generateToken();
+            Integer token = tokenGenerator.generateTokenE();
             usuario.setToken(token);
             usuarioRepository.save(usuario);
             try{
