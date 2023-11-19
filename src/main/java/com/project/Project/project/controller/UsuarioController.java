@@ -1,10 +1,7 @@
 package com.project.Project.project.controller;
-import com.project.Project.project.model.Usuario;
-import com.project.Project.project.model.UsuarioDAO;
-import com.project.Project.project.model.UsuarioRol;
+import com.project.Project.project.model.*;
 import com.project.Project.project.repository.UsuarioRepository;
 import com.project.Project.project.repository.UsuarioRolRepository;
-import com.project.Project.project.service.TokenGenerator;
 import com.project.Project.project.service.TokenGenerator;
 import com.project.Project.project.service.UsuarioService;
 import com.project.Project.project.service.EmailService;
@@ -14,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -98,13 +93,14 @@ public class UsuarioController {
     }
 
     @PostMapping("/authUsuario")
-    public ResponseEntity<String> validarUsuario(@RequestBody Map<String, Object> credenciales) {
+    public ResponseEntity<String> validarUsuario(@RequestBody LoginRequest request) {
         try {
-            String correo = (String) credenciales.get("correo");
-            String passwd = (String) credenciales.get("passwd");
+            String correo = request.getCorreo();
+            String passwd = request.getPasswd();
+            AuthResponse authResponse = usuarioService.validarUsuario(correo, passwd, request);
 
-            if (usuarioService.validarUsuario(correo, passwd)) {
-                return ResponseEntity.ok("Usuario Autenticado.");
+            if (authResponse != null) {
+                return ResponseEntity.ok("Usuario Autenticado." + authResponse.getToken());
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas.");
             }

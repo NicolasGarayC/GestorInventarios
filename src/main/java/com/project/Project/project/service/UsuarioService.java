@@ -1,18 +1,34 @@
 package com.project.Project.project.service;
 
+import com.project.Project.project.model.AuthResponse;
+import com.project.Project.project.model.LoginRequest;
 import com.project.Project.project.model.Usuario;
 import com.project.Project.project.model.UsuarioDAO;
+import com.project.Project.project.service.*;
 import com.project.Project.project.repository.UsuarioRepository;
+import com.project.Project.project.security.JwtService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+
 public class UsuarioService {
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -22,6 +38,9 @@ public class UsuarioService {
 
     @Autowired
     private EmailService emailService;
+
+    public UsuarioService() {
+    }
 
     public UsuarioDAO getUsuarioById(int id) {
         Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
@@ -57,7 +76,17 @@ public class UsuarioService {
         }
     }
 
-    public boolean validarUsuario(String correo, String passwd) {
+    public AuthResponse login(LoginRequest request) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getCorreo(), request.getPasswd()));
+        UserDetails user= (UserDetails) usuarioRepository.findByCorreo(request.getCorreo()).orElseThrow();
+        String token=jwtService.getToken(user);
+        return AuthResponse.builder()
+                .token(token)
+                .build();
+
+    }
+
+    public AuthResponse validarUsuario(String correo, String passwd, LoginRequest request) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByCorreo(correo);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
@@ -72,7 +101,7 @@ public class UsuarioService {
                 if(usuario.getEstado().equals("Inhabilitado")){
                     throw new RuntimeException("El usuario se ha inhabilitado.");
                 }
-                return true;
+                return login(request);
             }else{
                 usuario.setIntentosFallidos(usuario.getIntentosFallidos() + 1);
                 usuarioRepository.save(usuario);
@@ -93,7 +122,7 @@ public class UsuarioService {
         }else{
             throw new RuntimeException("Usuario Inexistente");
         }
-        return false;
+        return null;
     }
     @Transactional
     public boolean confirmarRegistro(String correo, Integer token) {
