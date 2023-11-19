@@ -48,10 +48,13 @@ public class Usuario {
     @Column(name = "intentos_fallidos")
     private Integer intentosFallidos;
 
+    @Column(name = "rol")
+    private Role rol;
+
     public Usuario() {
     }
 
-    public Usuario(String correo, String passwd, Integer cedula, String nombre, boolean cambiarClave, Date fechaUltimoCambioClave, Integer token) {
+    public Usuario(String correo, String passwd, Integer cedula, String nombre, boolean cambiarClave, Date fechaUltimoCambioClave, Integer token, Role rol) {
         this.correo = correo;
         this.passwd = passwd;
         this.cedula = cedula;
@@ -61,6 +64,7 @@ public class Usuario {
         this.fechaUltimoCambioClave = fechaUltimoCambioClave;
         this.token = token;
         this.intentosFallidos = 0;
+        this.rol = rol;
     }
 
     public Integer getIntentosFallidos() {
@@ -69,6 +73,14 @@ public class Usuario {
 
     public void setIntentosFallidos(Integer intentosFallidos) {
         this.intentosFallidos = intentosFallidos;
+    }
+
+    public Role getRol() {
+        return rol;
+    }
+
+    public void setRol(Role rol) {
+        this.rol = rol;
     }
 
     public Integer getId() {
