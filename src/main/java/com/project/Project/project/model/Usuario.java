@@ -5,16 +5,21 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 
 @Entity
 @Table(name = "usuarios")
-public class Usuario {
+public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -67,6 +72,14 @@ public class Usuario {
         this.rol = rol;
     }
 
+    public String getCorreo() {
+        return correo;
+    }
+
+    public String getPasswd() {
+        return passwd;
+    }
+
     public Integer getIntentosFallidos() {
         return intentosFallidos;
     }
@@ -103,16 +116,8 @@ public class Usuario {
         this.id = id;
     }
 
-    public String getCorreo() {
-        return correo;
-    }
-
     public void setCorreo(String correo) {
         this.correo = correo;
-    }
-
-    public String getPasswd() {
-        return passwd;
     }
 
     public void setPasswd(String passwd) {
@@ -156,5 +161,35 @@ public class Usuario {
 
     public void setFechaUltimoCambioClave(Date fechaUltimoCambioClave) {
         this.fechaUltimoCambioClave = fechaUltimoCambioClave;
+    }
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority((rol.name())));
+    }
+
+    @Override
+    public String getPassword() {
+        return this.passwd;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.correo;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

@@ -1,33 +1,39 @@
 package com.project.Project.project.controller;
 import com.project.Project.project.model.*;
 import com.project.Project.project.repository.UsuarioRepository;
-import com.project.Project.project.repository.UsuarioRolRepository;
-import com.project.Project.project.service.TokenGenerator;
-import com.project.Project.project.service.UsuarioService;
-import com.project.Project.project.service.EmailService;
+import com.project.Project.project.security.JwtService;
+import com.project.Project.project.service.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
-
+    private static final Logger logger = LoggerFactory.getLogger(UsuarioController.class);
     @Autowired
     private UsuarioRepository usuarioRepository;
 
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private JwtService jwtService;
 
     @Autowired
     private EmailService emailService;
 
     @Autowired
     private TokenGenerator tokenGenerator;
+    private final PasswordEncoder passwordEncoder;
+
 
     @GetMapping("/getusuario/{id}")
     public ResponseEntity<Usuario> getUsuarioById(@PathVariable int id) {
@@ -79,11 +85,25 @@ public class UsuarioController {
         }
 
         try {
-            Usuario usuario = new Usuario(correo, passwd, cedula, nombre, cambiarClave, fechaUltimoCambioClave, token, rol);
-            usuarioService.insertarUsuario(usuario);
+            Usuario user = Usuario.builder()
+                    .correo(correo)
+                    .passwd(passwordEncoder.encode(passwd))
+                    .cedula(cedula)
+                    .nombre(nombre)
+                    .estado("Preregistro")
+                    .intentosFallidos(0)
+                    .cambiarClave(cambiarClave)
+                    .fechaUltimoCambioClave(fechaUltimoCambioClave)
+                    .token(token)
+                    .rol(rol)
+                    .build();
 
+            usuarioService.insertarUsuario(user);
+            AuthResponse a= AuthResponse.builder()
+                    .token(jwtService.getToken(user))
+                    .build();
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("Se ha registrado con éxito. Al correo sumistrado llegará un token de verificación para activar su cuenta");
+            return ResponseEntity.status(HttpStatus.CREATED).body("Se ha registrado con éxito. Al correo sumistrado llegará un token de verificación para activar su cuenta: "+a.getToken());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No se pudo insertar el usuario: " + e.getMessage());
         }
@@ -97,7 +117,7 @@ public class UsuarioController {
             AuthResponse authResponse = usuarioService.validarUsuario(correo, passwd, request);
 
             if (authResponse != null) {
-                return ResponseEntity.ok("Usuario Autenticado." + authResponse.getToken());
+                return ResponseEntity.ok("Usuario Autenticado.   token:" + authResponse.getToken());
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas.");
             }

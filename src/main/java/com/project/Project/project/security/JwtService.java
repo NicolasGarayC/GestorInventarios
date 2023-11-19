@@ -25,18 +25,18 @@ public class JwtService {
 
     private String getToken(Map<String,Object> extraClaims, UserDetails user) {
         return Jwts
-            .builder()
-            .setClaims(extraClaims)
-            .setSubject(user.getUsername())
-            .setIssuedAt(new Date(System.currentTimeMillis()))
-            .setExpiration(new Date(System.currentTimeMillis()+1000*60*24))
-            //.signWith(getKey(), SignatureAlgorithm.HS256)
-            .compact();
+                .builder()
+                .setClaims(extraClaims)
+                .setSubject(user.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis()+1000*60*24))
+                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
     private Key getKey() {
-       byte[] keyBytes=Decoders.BASE64.decode(SECRET_KEY);
-       return Keys.hmacShaKeyFor(keyBytes);
+        byte[] keyBytes=Decoders.BASE64.decode(SECRET_KEY);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String getUsernameFromToken(String token) {
@@ -51,11 +51,11 @@ public class JwtService {
     private Claims getAllClaims(String token)
     {
         return Jwts
-            .parserBuilder()
-            .setSigningKey(getKey())
-            .build()
-            .parseClaimsJws(token)
-            .getBody();
+                .parserBuilder()
+                .setSigningKey(getKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     public <T> T getClaim(String token, Function<Claims,T> claimsResolver)
@@ -73,5 +73,5 @@ public class JwtService {
     {
         return getExpiration(token).before(new Date());
     }
-    
+
 }

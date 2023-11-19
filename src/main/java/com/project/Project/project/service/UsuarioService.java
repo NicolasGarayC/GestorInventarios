@@ -12,17 +12,19 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 
-public class UsuarioService {
+public class UsuarioService implements UserDetails{
 
     @Autowired
     private JwtService jwtService;
@@ -75,19 +77,17 @@ public class UsuarioService {
 
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getCorreo(), request.getPasswd()));
-        UserDetails user= (UserDetails) usuarioRepository.findByCorreo(request.getCorreo()).orElseThrow();
+        UserDetails user=usuarioRepository.findByCorreo(request.getCorreo()).orElseThrow();
         String token=jwtService.getToken(user);
         return AuthResponse.builder()
                 .token(token)
                 .build();
-
     }
 
     public AuthResponse validarUsuario(String correo, String passwd, LoginRequest request) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByCorreo(correo);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
-            if(usuario.getPasswd().equals(passwd)){
                 if(usuario.getIntentosFallidos() > 0 ){
                     usuario.setIntentosFallidos(0);
                     usuarioRepository.save(usuario);
@@ -99,27 +99,10 @@ public class UsuarioService {
                     throw new RuntimeException("El usuario se ha inhabilitado.");
                 }
                 return login(request);
-            }else{
-                usuario.setIntentosFallidos(usuario.getIntentosFallidos() + 1);
-                usuarioRepository.save(usuario);
-                if(usuario.getIntentosFallidos()>=3){
-                    usuario.setEstado("Inhabilitado");
-                    usuarioRepository.save(usuario);
-                    Integer token = tokenGenerator.generateToken();
-                    usuario.setToken(token);
-                    usuarioRepository.save(usuario);
-                    try{
-                        emailService.sendSimpleMessage(correo,"Token Rehabilitación usuario","Este es su token de recuperacion de usuario, ingreselo en la aplicación: " + token);
-                    }catch(Exception e){
-                        throw new IllegalArgumentException("Error al enviar correo de recuperación, consulte con el administrador");
-                    }
-                    throw new RuntimeException("El usuario se ha inhabilitado por intentos de sesion fallidos. Se ha enviado un token a su correo para habilitar su usuario");
-                }
-            }
+
         }else{
             throw new RuntimeException("Usuario Inexistente");
         }
-        return null;
     }
     @Transactional
     public boolean confirmarRegistro(String correo, Integer token) {
@@ -199,6 +182,41 @@ public class UsuarioService {
             return "La contraseña debe tener al menos un símbolo.";
         }
         return "ok";
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
+    }
+
+    @Override
+    public String getPassword() {
+        return null;
+    }
+
+    @Override
+    public String getUsername() {
+        return null;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return false;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return false;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return false;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return false;
     }
 }
 
