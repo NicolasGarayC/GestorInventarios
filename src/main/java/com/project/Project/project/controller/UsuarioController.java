@@ -177,6 +177,10 @@ public class UsuarioController {
     @PostMapping("/RehabilitarUsuario/{numeroToken}")
     public ResponseEntity<String> rehabilitarUsuario(@PathVariable("numeroToken") int numerotoken,@RequestBody Map<String, String> body){
         String contrasenia = body.get("contrasenia");
+        String valid = usuarioService.validarContrasena(contrasenia);
+        if(!(valid.equals("ok"))){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + valid);
+        }
         try{
             String resultado = usuarioService.recuperarContrasenia(numerotoken,contrasenia);
             if (resultado.equals("Contraseña actualizada con éxito.")) {
