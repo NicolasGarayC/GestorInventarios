@@ -28,6 +28,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authRequest ->
                         authRequest
                                 .requestMatchers("/api/usuarios/**").permitAll()
+                                .requestMatchers("/api/auditor/**").hasRole("AUDITOR")
+                                .requestMatchers("/api/**").hasAnyRole("ADMIN", "OPERATIVO")
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager->

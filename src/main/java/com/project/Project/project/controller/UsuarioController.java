@@ -99,11 +99,8 @@ public class UsuarioController {
                     .build();
 
             usuarioService.insertarUsuario(user);
-            AuthResponse a= AuthResponse.builder()
-                    .token(jwtService.getToken(user))
-                    .build();
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("Se ha registrado con éxito. Al correo sumistrado llegará un token de verificación para activar su cuenta: "+a.getToken());
+            return ResponseEntity.status(HttpStatus.CREATED).body("Se ha registrado con éxito. Al correo sumistrado llegará un token de verificación para activar su cuenta ");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No se pudo insertar el usuario: " + e.getMessage());
         }

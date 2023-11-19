@@ -162,10 +162,10 @@ public class Usuario implements UserDetails {
     public void setFechaUltimoCambioClave(Date fechaUltimoCambioClave) {
         this.fechaUltimoCambioClave = fechaUltimoCambioClave;
     }
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority((rol.name())));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + rol.name()));
     }
-
     @Override
     public String getPassword() {
         return this.passwd;
