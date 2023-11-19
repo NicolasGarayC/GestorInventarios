@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.Project.project.model.Articulo;
 import com.project.Project.project.model.ArticulosCompraDTO;
 import com.project.Project.project.model.CompraArticulosDTO;
+import com.project.Project.project.model.DevoUpdateDTO;
 import com.project.Project.project.service.CompraService;
 import com.project.Project.project.service.ErrorLoggingService;
 import org.junit.jupiter.api.Test;
@@ -64,7 +65,6 @@ public class CompraControllerTest {
         articulo2.setEstado(1);
         articulosCompraList.add(articulo2);
 
-        // Establecer la lista de ArticulosCompraDTO y otros campos en CompraArticulosDTO
         compraArticulosDTO.setArticulosCompra(articulosCompraList);
         compraArticulosDTO.setIdUsuario(1);
         compraArticulosDTO.setIdProveedor(1);
@@ -73,6 +73,27 @@ public class CompraControllerTest {
         mockMvc.perform(post("/api/compras/registrarCompra")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(compraArticulosDTO)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void actualizarDevolucion() throws Exception {
+        DevoUpdateDTO devoUpdateDTO = new DevoUpdateDTO();
+        devoUpdateDTO.setIdCompra(49);
+        devoUpdateDTO.setDescripcion("precio");
+        ArrayList<Integer> arr = new ArrayList<>();
+        arr.add(6);
+        devoUpdateDTO.setDevuelto(arr);
+
+        Mockito.doNothing().when(compraService).actualizarDevolucion(
+                devoUpdateDTO.getIdCompra(),
+                devoUpdateDTO.getDescripcion(),
+                devoUpdateDTO.getDevuelto()
+        );
+
+        mockMvc.perform(post("/api/compras/devolucionCompra")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(devoUpdateDTO)))
                 .andExpect(status().isOk());
     }
 }
