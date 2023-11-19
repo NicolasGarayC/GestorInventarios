@@ -33,9 +33,6 @@ public class UsuarioService {
         }
     }
 
-    public List<Object[]> getUsuariosWithRol(int userId) {
-        return usuarioRepository.findUsuariosWithRolId(userId);
-    }
 
     public UsuarioDAO convertToUsuarioDAO(Usuario usuario) {
         UsuarioDAO usuarioDAO = new UsuarioDAO();

@@ -1,10 +1,8 @@
 package com.project.Project.project.controller;
+import com.project.Project.project.model.Role;
 import com.project.Project.project.model.Usuario;
 import com.project.Project.project.model.UsuarioDAO;
-import com.project.Project.project.model.UsuarioRol;
 import com.project.Project.project.repository.UsuarioRepository;
-import com.project.Project.project.repository.UsuarioRolRepository;
-import com.project.Project.project.service.TokenGenerator;
 import com.project.Project.project.service.TokenGenerator;
 import com.project.Project.project.service.UsuarioService;
 import com.project.Project.project.service.EmailService;
@@ -14,8 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -27,8 +23,6 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
-    @Autowired
-    private UsuarioRolRepository usuarioRolRepository;
 
     @Autowired
     private EmailService emailService;
@@ -45,11 +39,6 @@ public class UsuarioController {
             return ResponseEntity.notFound().build();
         }
     }
-    @GetMapping("/usuariosNativo/{userId}")
-    public List<Object[]> getUsuariosWithRol(@PathVariable int userId) {
-        List<Object[]> usuariosConRol = usuarioRepository.findUsuariosWithRolId(userId);
-        return usuariosConRol;
-    }
 
     @PostMapping("/insertarUsuario")
     public ResponseEntity<String> insertarUsuario(@RequestBody Map<String, Object> usuarioData) {
@@ -60,8 +49,16 @@ public class UsuarioController {
         String nombre = (String) usuarioData.get("nombre");
         boolean cambiarClave = (boolean) usuarioData.get("cambiarClave");
         Date fechaUltimoCambioClave = new Date();
-
-        int idRol = (int) usuarioData.get("idRol");
+        Role rol;
+        if(((String) usuarioData.get("rol")).equals("ADMIN")){
+            rol = Role.ADMIN;
+        }else if(((String) usuarioData.get("rol")).equals("OPERATIVO")){
+            rol = Role.OPERATIVO;
+        }else if(((String) usuarioData.get("rol")).equals("AUDITOR")){
+            rol = Role.AUDITOR;
+        }else {
+            rol = Role.OPERATIVO;
+        }
 
         if (usuarioRepository.existsByCorreo(correo)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El correo ya está en uso.");
@@ -83,13 +80,9 @@ public class UsuarioController {
         }
 
         try {
-            Usuario usuario = new Usuario(correo, passwd, cedula, nombre, cambiarClave, fechaUltimoCambioClave, token);
-            UsuarioDAO nuevoUsuario = usuarioService.insertarUsuario(usuario);
+            Usuario usuario = new Usuario(correo, passwd, cedula, nombre, cambiarClave, fechaUltimoCambioClave, token, rol);
+            usuarioService.insertarUsuario(usuario);
 
-            UsuarioRol usuarioRol = new UsuarioRol();
-            usuarioRol.setIdUsuario(nuevoUsuario.getId());
-            usuarioRol.setIdRol(idRol);
-            usuarioRolRepository.save(usuarioRol);
 
             return ResponseEntity.status(HttpStatus.CREATED).body("Se ha registrado con éxito. Al correo sumistrado llegará un token de verificación para activar su cuenta");
         } catch (Exception e) {
