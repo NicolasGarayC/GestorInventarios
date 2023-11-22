@@ -6,6 +6,10 @@ import com.project.Project.project.model.VentaArticuloDTO;
 import com.project.Project.project.model.articulosEstadoDTO;
 import com.project.Project.project.service.ErrorLoggingService;
 import com.project.Project.project.service.VentaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+@Tag(name = "Ventas", description = "Gestiona las operaciones relacionadas con Ventas")
 @RestController
 @RequestMapping("/api/ventas")
 public class VentaController {
@@ -25,6 +30,9 @@ public class VentaController {
     @Autowired
     private ErrorLoggingService errorLoggingService;
 
+    @Operation(summary = "Registrar una nueva venta", description = "Registra una nueva venta en el sistema.")
+    @ApiResponse(responseCode = "200", description = "Venta registrada exitosamente", content = @Content)
+    @ApiResponse(responseCode = "500", description = "Error al crear la venta", content = @Content)
     @PostMapping("/nuevaVenta")
     public ResponseEntity<Object> createVenta(@Valid @RequestBody VentaArticuloDTO ventaArticuloDTO) {
         try {
@@ -36,6 +44,9 @@ public class VentaController {
         }
     }
 
+    @Operation(summary = "Revertir una venta", description = "Revierte una venta específica.")
+    @ApiResponse(responseCode = "200", description = "Venta revertida exitosamente", content = @Content)
+    @ApiResponse(responseCode = "500", description = "Error al revertir la venta", content = @Content)
     @PostMapping("/devolucionVenta")
     public ResponseEntity<String> revertirVenta(@Valid @RequestBody ReversionVentaDTO reversionVentaDTO) {
         try {
@@ -53,7 +64,10 @@ public class VentaController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
+    @Operation(summary = "Actualizar el estado de una venta", description = "Actualiza el estado de los artículos en una venta.")
+    @ApiResponse(responseCode = "200", description = "Estado actualizado", content = @Content)
+    @ApiResponse(responseCode = "500", description = "Error al actualizar el estado", content = @Content)
     @PostMapping("/estadoVenta")
     public ResponseEntity<String> actualizarEstadoVenta(@RequestBody EstadosDTO estadosDTO) {
         try {

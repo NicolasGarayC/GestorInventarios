@@ -1,11 +1,16 @@
 package com.project.Project.project.controller;
 import com.project.Project.project.model.Role;
 import com.project.Project.project.model.Usuario;
-import com.project.Project.project.model.UsuarioDAO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import com.project.Project.project.repository.UsuarioRepository;
 import com.project.Project.project.service.TokenGenerator;
 import com.project.Project.project.service.UsuarioService;
 import com.project.Project.project.service.EmailService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,23 +18,22 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+@Tag(name = "Usuarios", description = "Gestiona las operaciones relacionadas con Usuarios")
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
-
     @Autowired
     private UsuarioRepository usuarioRepository;
-
     @Autowired
     private UsuarioService usuarioService;
-
-
     @Autowired
     private EmailService emailService;
-
     @Autowired
     private TokenGenerator tokenGenerator;
 
+    @Operation(summary = "Obtener usuario por ID", description = "Obtiene un usuario específico por su ID.")
+    @ApiResponse(responseCode = "200", description = "Usuario encontrado", content = @Content(schema = @Schema(implementation = Usuario.class)))
+    @ApiResponse(responseCode = "404", description = "Usuario no encontrado", content = @Content)
     @GetMapping("/getusuario/{id}")
     public ResponseEntity<Usuario> getUsuarioById(@PathVariable int id) {
         Optional<Usuario> usuario = usuarioRepository.findById(id);
@@ -40,9 +44,11 @@ public class UsuarioController {
         }
     }
 
+    @Operation(summary = "Insertar un nuevo usuario", description = "Inserta un nuevo usuario en el sistema.")
+    @ApiResponse(responseCode = "201", description = "Usuario creado", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Datos inválidos o usuario ya existe", content = @Content)
     @PostMapping("/insertarUsuario")
-    public ResponseEntity<String> insertarUsuario(@RequestBody Map<String, Object> usuarioData) {
-
+    public ResponseEntity<String> insertarUsuario(@RequestBody(description = "Datos del nuevo usuario", required = true, content = @Content(schema = @Schema(implementation = Map.class))) Map<String, Object> usuarioData) {
         String correo = (String) usuarioData.get("correo");
         String passwd = (String) usuarioData.get("passwd");
         int cedula = (int) usuarioData.get("cedula");
@@ -90,8 +96,11 @@ public class UsuarioController {
         }
     }
 
+    @Operation(summary = "Validar usuario", description = "Valida las credenciales de un usuario.")
+    @ApiResponse(responseCode = "200", description = "Usuario autenticado", content = @Content)
+    @ApiResponse(responseCode = "401", description = "Credenciales inválidas", content = @Content)
     @PostMapping("/authUsuario")
-    public ResponseEntity<String> validarUsuario(@RequestBody Map<String, Object> credenciales) {
+    public ResponseEntity<String> validarUsuario(@RequestBody(description = "Credenciales del usuario", required = true, content = @Content(schema = @Schema(implementation = Map.class))) Map<String, Object> credenciales) {
         try {
             String correo = (String) credenciales.get("correo");
             String passwd = (String) credenciales.get("passwd");
@@ -107,8 +116,11 @@ public class UsuarioController {
         }
     }
 
+    @Operation(summary = "Confirmar registro de usuario", description = "Confirma el registro de un usuario mediante un token.")
+    @ApiResponse(responseCode = "200", description = "Usuario confirmado", content = @Content)
+    @ApiResponse(responseCode = "401", description = "Token inválido o usuario no encontrado", content = @Content)
     @PostMapping("/confirmarregistro")
-    public ResponseEntity<String> confirmarRegistro(@RequestBody Map<String, Object> credenciales) {
+    public ResponseEntity<String> confirmarRegistro(@RequestBody(description = "Datos para confirmar registro", required = true, content = @Content(schema = @Schema(implementation = Map.class))) Map<String, Object> credenciales) {
         try {
             String correo = (String) credenciales.get("correo");
             Integer token = (Integer) credenciales.get("token");
@@ -124,8 +136,11 @@ public class UsuarioController {
         }
     }
 
+    @Operation(summary = "Recuperar contraseña", description = "Inicia el proceso de recuperación de contraseña para un usuario.")
+    @ApiResponse(responseCode = "200", description = "Correo de recuperación enviado", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Correo no proporcionado o inválido", content = @Content)
     @PostMapping("/correoReestablecerContrasenia")
-    public ResponseEntity<String> recuperarContrasenia(@RequestBody Map<String, String> body){
+    public ResponseEntity<String> recuperarContrasenia(@RequestBody(description = "Correo electrónico del usuario", required = true, content = @Content(schema = @Schema(implementation = Map.class))) Map<String, String> body) {
         String correo= body.get("correo");
         if(correo!= null){
             try{
@@ -139,8 +154,11 @@ public class UsuarioController {
         }
     }
 
+    @Operation(summary = "Reestablecer contraseña", description = "Reestablece la contraseña de un usuario mediante un token.")
+    @ApiResponse(responseCode = "200", description = "Contraseña reestablecida", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Token inválido o datos incorrectos", content = @Content)
     @PostMapping("/ReestablecerContrasenia/{numeroToken}")
-    public ResponseEntity<String> reestablecerContrasenia(@PathVariable("numeroToken") int numeroToken, @RequestBody Map<String, String> body) {
+    public ResponseEntity<String> reestablecerContrasenia(@PathVariable("numeroToken") int numeroToken, @RequestBody(description = "Nueva contraseña y token", required = true, content = @Content(schema = @Schema(implementation = Map.class))) Map<String, String> body) {
         String contrasenia = body.get("contrasenia");
         if (String.valueOf(numeroToken).length() == 6) {
             String resultado = usuarioService.recuperarContrasenia(numeroToken, contrasenia);
@@ -154,8 +172,11 @@ public class UsuarioController {
         }
     }
 
+    @Operation(summary = "Rehabilitar usuario", description = "Rehabilita un usuario mediante un token.")
+    @ApiResponse(responseCode = "200", description = "Usuario rehabilitado", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Token inválido o datos incorrectos", content = @Content)
     @PostMapping("/RehabilitarUsuario/{numeroToken}")
-    public ResponseEntity<String> rehabilitarUsuario(@PathVariable("numeroToken") int numerotoken,@RequestBody Map<String, String> body){
+    public ResponseEntity<String> rehabilitarUsuario(@PathVariable("numeroToken") int numerotoken, @RequestBody(description = "Nueva contraseña y token", required = true, content = @Content(schema = @Schema(implementation = Map.class))) Map<String, String> body) {
         String contrasenia = body.get("contrasenia");
         try{
             String resultado = usuarioService.recuperarContrasenia(numerotoken,contrasenia);
