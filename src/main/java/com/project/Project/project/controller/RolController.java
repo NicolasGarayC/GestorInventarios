@@ -2,6 +2,7 @@ package com.project.Project.project.controller;
 
 import com.project.Project.project.model.Rol;
 import com.project.Project.project.service.RolService;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,7 @@ public class RolController {
     @ApiResponse(responseCode = "200", description = "Rol encontrado", content = @Content(schema = @Schema(implementation = Rol.class)))
     @ApiResponse(responseCode = "404", description = "Rol no encontrado", content = @Content)
     @GetMapping("/{id}")
-    public ResponseEntity<Rol> getRolById(@PathVariable Long id) {
+    public ResponseEntity<Rol> getRolById(@Parameter(description = "id Rol", required = true) @PathVariable Long id) {
         Optional<Rol> rol = rolService.getRolById(id);
         return rol.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }

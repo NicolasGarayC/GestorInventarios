@@ -2,6 +2,7 @@ package com.project.Project.project.controller;
 
 import com.project.Project.project.model.Proveedor;
 import com.project.Project.project.repository.ProveedorRepository;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ public class ProveedorController {
     @ApiResponse(responseCode = "200", description = "Proveedor encontrado", content = @Content(schema = @Schema(implementation = Proveedor.class)))
     @ApiResponse(responseCode = "404", description = "Proveedor no encontrado", content = @Content)
     @GetMapping("/{id}")
-    public ResponseEntity<Proveedor> getProveedorById(@PathVariable int id) {
+    public ResponseEntity<Proveedor> getProveedorById(@Parameter(description = "id proveedor", required = true) @PathVariable int id) {
         Optional<Proveedor> proveedor = proveedorRepository.findById((long) id);
         if (proveedor.isPresent()) {
             return ResponseEntity.ok(proveedor.get());

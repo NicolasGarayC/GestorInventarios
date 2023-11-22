@@ -2,6 +2,7 @@ package com.project.Project.project.controller;
 import com.project.Project.project.model.Role;
 import com.project.Project.project.model.Usuario;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -35,7 +36,7 @@ public class UsuarioController {
     @ApiResponse(responseCode = "200", description = "Usuario encontrado", content = @Content(schema = @Schema(implementation = Usuario.class)))
     @ApiResponse(responseCode = "404", description = "Usuario no encontrado", content = @Content)
     @GetMapping("/getusuario/{id}")
-    public ResponseEntity<Usuario> getUsuarioById(@PathVariable int id) {
+    public ResponseEntity<Usuario> getUsuarioById(@Parameter(description = "id usuario", required = true) @PathVariable int id) {
         Optional<Usuario> usuario = usuarioRepository.findById(id);
         if (usuario.isPresent()) {
             return ResponseEntity.ok(usuario.get());
@@ -158,7 +159,7 @@ public class UsuarioController {
     @ApiResponse(responseCode = "200", description = "Contraseña reestablecida", content = @Content)
     @ApiResponse(responseCode = "400", description = "Token inválido o datos incorrectos", content = @Content)
     @PostMapping("/ReestablecerContrasenia/{numeroToken}")
-    public ResponseEntity<String> reestablecerContrasenia(@PathVariable("numeroToken") int numeroToken, @RequestBody(description = "Nueva contraseña y token", required = true, content = @Content(schema = @Schema(implementation = Map.class))) Map<String, String> body) {
+    public ResponseEntity<String> reestablecerContrasenia(@Parameter(description = "Numero Token", required = true) @PathVariable("numeroToken") int numeroToken, @RequestBody(description = "Nueva contraseña y token", required = true, content = @Content(schema = @Schema(implementation = Map.class))) Map<String, String> body) {
         String contrasenia = body.get("contrasenia");
         if (String.valueOf(numeroToken).length() == 6) {
             String resultado = usuarioService.recuperarContrasenia(numeroToken, contrasenia);
@@ -176,7 +177,7 @@ public class UsuarioController {
     @ApiResponse(responseCode = "200", description = "Usuario rehabilitado", content = @Content)
     @ApiResponse(responseCode = "400", description = "Token inválido o datos incorrectos", content = @Content)
     @PostMapping("/RehabilitarUsuario/{numeroToken}")
-    public ResponseEntity<String> rehabilitarUsuario(@PathVariable("numeroToken") int numerotoken, @RequestBody(description = "Nueva contraseña y token", required = true, content = @Content(schema = @Schema(implementation = Map.class))) Map<String, String> body) {
+    public ResponseEntity<String> rehabilitarUsuario(@Parameter(description = "Numero Token", required = true) @PathVariable("numeroToken") int numerotoken, @RequestBody(description = "Nueva contraseña y token", required = true, content = @Content(schema = @Schema(implementation = Map.class))) Map<String, String> body) {
         String contrasenia = body.get("contrasenia");
         try{
             String resultado = usuarioService.recuperarContrasenia(numerotoken,contrasenia);

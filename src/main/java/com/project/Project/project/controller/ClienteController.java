@@ -2,6 +2,7 @@ package com.project.Project.project.controller;
 
 import com.project.Project.project.model.Cliente;
 import com.project.Project.project.service.ClienteService;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ public class ClienteController {
     @Operation(summary = "Obtener cliente por ID", description = "Obtiene un cliente específico por su ID.")
     @ApiResponse(responseCode = "200", description = "Cliente encontrado", content = @Content(schema = @Schema(implementation = Cliente.class)))
     @GetMapping("/{id}")
-    public Cliente obtenerClientePorId(@PathVariable Long id) {
+    public Cliente obtenerClientePorId(@Parameter(description = "id cliente", required = true) @PathVariable Long id) {
         return clienteService.obtenerClientePorId(id);
     }
 
@@ -41,7 +42,7 @@ public class ClienteController {
     @Operation(summary = "Eliminar un cliente", description = "Elimina un cliente del sistema por su ID.")
     @ApiResponse(responseCode = "200", description = "Cliente eliminado")
     @DeleteMapping("/{id}")
-    public void eliminarCliente(@PathVariable Long id) {
+    public void eliminarCliente(@Parameter(description = "id cliente", required = true) @PathVariable Long id) {
         clienteService.eliminarCliente(id);
     }
 
