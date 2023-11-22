@@ -1,4 +1,5 @@
 package com.project.Project.project.model;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import java.util.Date;
 @Entity
@@ -6,11 +7,14 @@ import java.util.Date;
 
 public class Rol {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador único del rol", example = "1")
     private Integer id;
 
     @Column(name = "rol")
+    @Schema(description = "Nombre del rol", example = "ADMIN")
     private String rol;
 
     public Rol() {}

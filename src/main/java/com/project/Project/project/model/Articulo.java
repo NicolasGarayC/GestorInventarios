@@ -1,5 +1,6 @@
 package com.project.Project.project.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -9,27 +10,35 @@ public class Articulo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador único del artículo", example = "1", required = true)
     private int id;
 
     @NotBlank(message = "El nombre del artículo no puede estar vacío.")
+    @Schema(description = "Nombre del artículo", example = "Laptop", required = true)
     private String nombrearticulo;
 
     @NotBlank(message = "La marca no puede estar vacía.")
+    @Schema(description = "Marca del artículo", example = "Dell", required = true)
     private String marca;
 
     @NotBlank(message = "El modelo no puede estar vacío.")
+    @Schema(description = "Modelo del artículo", example = "Inspiron 15", required = true)
     private String modelo;
 
     @NotBlank(message = "El color no puede estar vacío.")
+    @Schema(description = "Color del artículo", example = "Negro", required = true)
     private String color;
 
     @NotBlank(message = "La unidad de medida no puede estar vacía.")
+    @Schema(description = "Unidad de medida del artículo", example = "Unidades", required = true)
     private String unidaddemedida;
 
     @Min(value = 0, message = "Las unidades disponibles no pueden ser negativas.")
+    @Schema(description = "Unidades disponibles del artículo", example = "50", required = true)
     private int unidadesdisponibles;
 
     @PositiveOrZero(message = "El valor unitario no puede ser negativo.")
+    @Schema(description = "Valor unitario del artículo", example = "500.00", required = true)
     private double valorunitario;
 
     public Articulo() {

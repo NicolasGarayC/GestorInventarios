@@ -1,7 +1,12 @@
 package com.project.Project.project.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 public class ProductoRevertidoDTO {
+    @Schema(description = "Identificador único del artículo", example = "123")
     private int idArticulo;
+
+    @Schema(description = "Cantidad de artículos revertidos", example = "5")
     private int cantidad;
 
     public ProductoRevertidoDTO() {

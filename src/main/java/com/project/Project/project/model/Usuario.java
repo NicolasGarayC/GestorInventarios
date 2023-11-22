@@ -1,5 +1,6 @@
 package com.project.Project.project.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
 import java.util.Date;
@@ -10,37 +11,47 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
+    @Schema(description = "Identificador único del usuario", example = "1")
     private Integer id;
 
     @Column(name = "correo", length = 45, nullable = false)
+    @Schema(description = "Correo electrónico del usuario", example = "usuario@example.com")
     private String correo;
 
     @Column(name = "passwd", length = 45, nullable = false)
+    @Schema(description = "Contraseña del usuario", example = "contraseña123")
     private String passwd;
 
     @Column(name = "cedula", length = 11)
+    @Schema(description = "Cédula de identidad del usuario", example = "123456789")
     private int cedula;
 
     @Column(name = "nombre", length = 45)
+    @Schema(description = "Nombre del usuario", example = "Juan Pérez")
     private String nombre;
 
     @Column(name = "estado", length = 45)
+    @Schema(description = "Estado actual del usuario", example = "Activo")
     private String estado;
 
     @Column(name = "cambiarclave")
+    @Schema(description = "Indica si el usuario debe cambiar su contraseña", example = "true")
     private boolean cambiarClave;
 
-
     @Column(name = "fecha_ult_cambio_clave")
+    @Schema(description = "Fecha del último cambio de contraseña", example = "2023-01-01")
     private Date fechaUltimoCambioClave;
 
     @Column(name = "token")
+    @Schema(description = "Token de autenticación o verificación", example = "123456")
     private Integer token;
 
     @Column(name = "intentos_fallidos")
+    @Schema(description = "Número de intentos fallidos de inicio de sesión", example = "0")
     private Integer intentosFallidos;
 
     @Column(name = "rol")
+    @Schema(description = "Rol del usuario en el sistema", example = "ADMIN")
     private Role rol;
 
     public Usuario() {

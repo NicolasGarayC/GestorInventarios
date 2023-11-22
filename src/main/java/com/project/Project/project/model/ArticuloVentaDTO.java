@@ -1,16 +1,20 @@
 package com.project.Project.project.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
 public class ArticuloVentaDTO {
 
+    @Schema(description = "Identificador del artículo", example = "123", required = true)
     @Min(value = 1, message = "El ID del artículo debe ser un entero positivo.")
     private int articulo;
 
+    @Schema(description = "Número de unidades vendidas del artículo", example = "10", required = true)
     @Min(value = 1, message = "Las unidades vendidas deben ser al menos 1.")
     private int unidadesVendidas;
 
-    @Min(value = 1, message = "Las unidades vendidas deben ser al menos 1.")
+    @Schema(description = "Estado del artículo", example = "1", required = true)
+    @Min(value = 1, message = "El estado debe ser un entero positivo.")
     private int estado;
     public ArticuloVentaDTO() {
     }

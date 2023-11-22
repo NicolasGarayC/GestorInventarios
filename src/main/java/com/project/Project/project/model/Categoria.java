@@ -1,5 +1,6 @@
 package com.project.Project.project.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
 
@@ -11,11 +12,12 @@ public class Categoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
+    @Schema(description = "Identificador único de la categoría", example = "1", required = true)
     private int id;
 
     @Column(name = "nombrecategoria", length = 45)
+    @Schema(description = "Nombre de la categoría", example = "Electrónica", required = true)
     private String nombreCategorias;
-
     // Constructor
     public Categoria() {
     }

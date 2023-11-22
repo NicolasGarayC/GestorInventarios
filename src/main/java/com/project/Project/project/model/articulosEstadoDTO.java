@@ -1,7 +1,12 @@
 package com.project.Project.project.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 public class articulosEstadoDTO{
+    @Schema(description = "Identificador único del artículo", example = "123", required = true)
     private Integer id;
+
+    @Schema(description = "Estado actual del artículo", example = "1", required = true)
     private Integer estado;
 
     public articulosEstadoDTO(Integer id, Integer estado) {

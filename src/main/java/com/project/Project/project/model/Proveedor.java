@@ -1,6 +1,7 @@
 
 package com.project.Project.project.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,20 +10,24 @@ public class Proveedor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
+    @Schema(description = "Identificador único del proveedor", example = "1")
     private Integer id;
 
     @Column(name = "nombre")
+    @Schema(description = "Nombre del proveedor", example = "Proveedor ABC")
     private String nombre;
 
     @Column(name = "identificacion")
+    @Schema(description = "Número de identificación del proveedor", example = "123456789")
     private Integer identificacion;
 
     @Column(name = "telefono")
+    @Schema(description = "Número de teléfono del proveedor", example = "3001234567")
     private Integer telefono;
 
     @Column(name = "correo")
+    @Schema(description = "Correo electrónico del proveedor", example = "contacto@proveedorabc.com")
     private String correo;
-
 
     public Proveedor() {
     }

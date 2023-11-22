@@ -1,14 +1,27 @@
 package com.project.Project.project.model;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.Date;
 
 public class UsuarioDAO {
+    @Schema(description = "Identificador único del usuario", example = "1")
     private Integer id;
+
+    @Schema(description = "Correo electrónico del usuario", example = "usuario@example.com")
     private String correo;
+
+    @Schema(description = "Cédula de identidad del usuario", example = "123456789")
     private Integer cedula;
+
+    @Schema(description = "Estado actual del usuario", example = "Activo")
     private String estado;
+
+    @Schema(description = "Indica si el usuario debe cambiar su contraseña", example = "true")
     private boolean cambiarClave;
+
+    @Schema(description = "Fecha del último cambio de contraseña", example = "2023-01-01")
     private Date fechaUltimoCambioClave;
 
     public UsuarioDAO(Integer id, String correo, Integer cedula, String estado, boolean cambiarClave, Date fechaUltimoCambioClave) {

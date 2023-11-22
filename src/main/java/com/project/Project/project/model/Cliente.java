@@ -1,5 +1,6 @@
 package com.project.Project.project.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
 @Entity
@@ -7,8 +8,13 @@ public class Cliente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador único del cliente", example = "1", required = true)
     private Long id;
+
+    @Schema(description = "Identificación numérica de la entidad", example = "12345678", required = true)
     private int identificacion;
+
+    @Schema(description = "Nombre del cliente", example = "Juan Pérez", required = true)
     private String nombre;
 
     public Cliente() {

@@ -1,5 +1,6 @@
 package com.project.Project.project.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
 import java.util.ArrayList;
@@ -9,15 +10,19 @@ public class ReversionVentaDTO {
 
     @NotNull(message = "El ID de venta no puede ser nulo.")
     @Min(value = 1, message = "El ID de venta debe ser un número positivo.")
+    @Schema(description = "Identificador único de la venta a revertir", example = "100")
     private int idVenta;
 
     @NotBlank(message = "El motivo de reversión no puede estar vacío.")
+    @Schema(description = "Motivo por el cual se realiza la reversión de la venta", example = "Producto defectuoso")
     private String motivoReversion;
 
     @NotNull(message = "La lista de artículos devueltos no puede ser nula.")
+    @Schema(description = "Lista de productos revertidos en la venta")
     private List<ProductoRevertidoDTO> devuelto;
 
     @NotNull(message = "La confirmación del usuario es requerida.")
+    @Schema(description = "Indica si el usuario ha confirmado la reversión", example = "true")
     private boolean confirmacionUsuario;
 
     public ReversionVentaDTO() {
