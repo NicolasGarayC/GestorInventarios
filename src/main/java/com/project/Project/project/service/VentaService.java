@@ -239,12 +239,12 @@ public class VentaService {
 
                 double probabilidad = calcularProbabilidadPoisson(articulo.getUnidadesdisponibles(), promedioVentas);
                 if((probabilidad*100) > 60){
-                    recomendacion = "Se recomienda añadir stock para el articulo" + (probabilidad*100);
+                    recomendacion = "Se recomienda añadir stock para el articulo, la probabilidad de que se agote es del: " + Math.round(probabilidad*100)+"%";
                 }else{
-                    recomendacion = "No se recomienda añadir stock para el articulo"+(probabilidad*100);
+                    recomendacion = "No se recomienda añadir stock para el articulo, la probabilidad de que se agote es del: "+ Math.round(probabilidad*100)+"%";
                 }
 
-                probabilidades.add(new ProbabilidadAgotarStockDTO(idArticulo, articulo.getNombrearticulo(), probabilidad, recomendacion));
+                probabilidades.add(new ProbabilidadAgotarStockDTO(idArticulo, articulo.getNombrearticulo(), articulo.getMarca(), probabilidad, recomendacion));
             }
         }
 

@@ -3,13 +3,17 @@ package com.project.Project.project.model;
 public class ProbabilidadAgotarStockDTO {
     private long idArticulo;
     private String nombreArticulo;
+
+    private String marca;
     private double probabilidadAgotarStock;
     private String recomendacionCompra;
 
-    public ProbabilidadAgotarStockDTO(long idArticulo, String nombreArticulo, double probabilidadAgotarStock) {
+    public ProbabilidadAgotarStockDTO(long idArticulo, String nombreArticulo, String marca, double probabilidadAgotarStock, String recomendacionCompra) {
         this.idArticulo = idArticulo;
         this.nombreArticulo = nombreArticulo;
+        this.marca = marca;
         this.probabilidadAgotarStock = probabilidadAgotarStock;
+        this.recomendacionCompra = recomendacionCompra;
     }
 
     public ProbabilidadAgotarStockDTO() {
@@ -44,13 +48,6 @@ public class ProbabilidadAgotarStockDTO {
     }
 
     public void setRecomendacionCompra(String recomendacionCompra) {
-        this.recomendacionCompra = recomendacionCompra;
-    }
-
-    public ProbabilidadAgotarStockDTO(long idArticulo, String nombreArticulo, double probabilidadAgotarStock, String recomendacionCompra) {
-        this.idArticulo = idArticulo;
-        this.nombreArticulo = nombreArticulo;
-        this.probabilidadAgotarStock = probabilidadAgotarStock;
         this.recomendacionCompra = recomendacionCompra;
     }
 
