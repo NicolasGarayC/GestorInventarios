@@ -1,9 +1,6 @@
 package com.project.Project.project.controller;
 
-import com.project.Project.project.model.EstadosDTO;
-import com.project.Project.project.model.ReversionVentaDTO;
-import com.project.Project.project.model.VentaArticuloDTO;
-import com.project.Project.project.model.articulosEstadoDTO;
+import com.project.Project.project.model.*;
 import com.project.Project.project.service.ErrorLoggingService;
 import com.project.Project.project.service.VentaService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Tag(name = "Ventas", description = "Gestiona las operaciones relacionadas con Ventas")
 @RestController
@@ -79,6 +77,19 @@ public class VentaController {
         } catch (Exception e) {
             errorLoggingService.logError("Error en VentaController - actualizarEstadoCompra", e, "");
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/probabilidadAgotarStock")
+    public ResponseEntity<List<ProbabilidadAgotarStockDTO>> obtenerProbabilidadAgotarStock() {
+        try {
+            List<ProbabilidadAgotarStockDTO> probabilidades = ventaService.analizarVentasPorMes();
+            if (probabilidades.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(probabilidades);
+        } catch (Exception e) {
+            // Manejar excepciones adecuadamente
+            return ResponseEntity.internalServerError().build();
         }
     }
 }

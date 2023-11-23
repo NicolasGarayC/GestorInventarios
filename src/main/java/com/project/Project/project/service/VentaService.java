@@ -12,10 +12,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class VentaService {
@@ -71,7 +68,7 @@ public class VentaService {
                 if (encontrado != null && encontrado.getUnidadesdisponibles() >= unidadesVendidas) {
                     articuloService.findByIdAndUpdateUnidadesDisponibles(encontrado.getId(),
                             (encontrado.getUnidadesdisponibles() - unidadesVendidas));
-                    encontrado.getValorunitario();
+
                     valorTotal += (encontrado.getValorunitario() * unidadesVendidas);
                 } else {
                     throw new RuntimeException("No hay suficiente stock para el artículo con ID: " + idArticulo);
@@ -226,5 +223,62 @@ public class VentaService {
             throw new RuntimeException("Error, compra inexistente." );
         }
     }
+    public List<ProbabilidadAgotarStockDTO> analizarVentasPorMes() {
+        int mesActual = LocalDate.now().getMonthValue();
+        List<VentasPorArticuloYMesProjection> ventasHistoricas = ventaRepository.findVentasPorMesHistorico(mesActual);
+
+        // Calcular promedios de ventas por artículo
+        Map<Long, Double> promediosVentas = calcularPromediosVentas(ventasHistoricas);
+
+        // Calcular probabilidad de agotar stock
+        List<ProbabilidadAgotarStockDTO> probabilidades = new ArrayList<>();
+        for (Map.Entry<Long, Double> entry : promediosVentas.entrySet()) {
+            int idArticulo = entry.getKey().intValue();
+            Double promedioVentas = entry.getValue();
+            Articulo articulo = articuloRepository.findById(idArticulo).orElse(null);
+            if (articulo != null) {
+                double probabilidad = calcularProbabilidadPoisson(articulo.getUnidadesdisponibles(), promedioVentas);
+                probabilidades.add(new ProbabilidadAgotarStockDTO(idArticulo, articulo.getNombrearticulo(), probabilidad));
+                
+            }
+        }
+
+        return probabilidades;
+
+    }
+    private double calcularProbabilidadPoisson(int stock, double promedioVentas) {
+        double probabilidad = 0.0;
+        for (int k = stock; k >= 0; k--) {
+            probabilidad += (Math.pow(promedioVentas, k) * Math.exp(-promedioVentas)) / factorial(k);
+        }
+        return 1 - probabilidad; // Probabilidad de vender más que el stock
+    }
+
+    private long factorial(int n) {
+        long resultado = 1;
+        for (int i = 2; i <= n; i++) {
+            resultado *= i;
+        }
+        return resultado;
+    }
+    private Map<Long, Double> calcularPromediosVentas(List<VentasPorArticuloYMesProjection> ventas) {
+        Map<Long, List<Integer>> ventasPorArticulo = new HashMap<>();
+        for (VentasPorArticuloYMesProjection venta : ventas) {
+            ventasPorArticulo.computeIfAbsent(venta.getId(), k -> new ArrayList<>()).add(venta.getTotal().intValue());
+        }
+
+        Map<Long, Double> promediosVentas = new HashMap<>();
+        for (Map.Entry<Long, List<Integer>> entry : ventasPorArticulo.entrySet()) {
+            Long idArticulo = entry.getKey();
+            List<Integer> ventasArticulo = entry.getValue();
+            double promedio = ventasArticulo.stream().mapToInt(Integer::intValue).average().orElse(0.0);
+            promediosVentas.put(idArticulo, promedio);
+        }
+
+        return promediosVentas;
+    }
+
+
+
 
 }
