@@ -88,7 +88,6 @@ public class VentaController {
             }
             return ResponseEntity.ok(probabilidades);
         } catch (Exception e) {
-            // Manejar excepciones adecuadamente
             return ResponseEntity.internalServerError().build();
         }
     }

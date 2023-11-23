@@ -227,19 +227,24 @@ public class VentaService {
         int mesActual = LocalDate.now().getMonthValue();
         List<VentasPorArticuloYMesProjection> ventasHistoricas = ventaRepository.findVentasPorMesHistorico(mesActual);
 
-        // Calcular promedios de ventas por artículo
         Map<Long, Double> promediosVentas = calcularPromediosVentas(ventasHistoricas);
 
-        // Calcular probabilidad de agotar stock
         List<ProbabilidadAgotarStockDTO> probabilidades = new ArrayList<>();
         for (Map.Entry<Long, Double> entry : promediosVentas.entrySet()) {
             int idArticulo = entry.getKey().intValue();
             Double promedioVentas = entry.getValue();
             Articulo articulo = articuloRepository.findById(idArticulo).orElse(null);
             if (articulo != null) {
+                String recomendacion;
+
                 double probabilidad = calcularProbabilidadPoisson(articulo.getUnidadesdisponibles(), promedioVentas);
-                probabilidades.add(new ProbabilidadAgotarStockDTO(idArticulo, articulo.getNombrearticulo(), probabilidad));
-                
+                if((probabilidad*100) > 60){
+                    recomendacion = "Se recomienda añadir stock para el articulo" + (probabilidad*100);
+                }else{
+                    recomendacion = "No se recomienda añadir stock para el articulo"+(probabilidad*100);
+                }
+
+                probabilidades.add(new ProbabilidadAgotarStockDTO(idArticulo, articulo.getNombrearticulo(), probabilidad, recomendacion));
             }
         }
 
@@ -248,17 +253,26 @@ public class VentaService {
     }
     private double calcularProbabilidadPoisson(int stock, double promedioVentas) {
         double probabilidad = 0.0;
-        for (int k = stock; k >= 0; k--) {
+
+        for (int k = 0; k <= stock; k++) {
             probabilidad += (Math.pow(promedioVentas, k) * Math.exp(-promedioVentas)) / factorial(k);
         }
-        return 1 - probabilidad; // Probabilidad de vender más que el stock
+        if (probabilidad < 0){
+            probabilidad = 0.00;
+        }
+        return 1 - probabilidad;
     }
 
-    private long factorial(int n) {
-        long resultado = 1;
-        for (int i = 2; i <= n; i++) {
+    private double factorial(int n) {
+        if (n == 0) {
+            return 1.0;
+        }
+
+        double resultado = 1.0;
+        for (int i = 1; i <= n; i++) {
             resultado *= i;
         }
+
         return resultado;
     }
     private Map<Long, Double> calcularPromediosVentas(List<VentasPorArticuloYMesProjection> ventas) {
@@ -274,11 +288,6 @@ public class VentaService {
             double promedio = ventasArticulo.stream().mapToInt(Integer::intValue).average().orElse(0.0);
             promediosVentas.put(idArticulo, promedio);
         }
-
         return promediosVentas;
     }
-
-
-
-
 }
