@@ -123,12 +123,8 @@ public class VentaService {
         return true;
     }
 
-    public boolean revertirVenta(int idVenta, String detalleDevolucion, List<ProductoRevertidoDTO> productosDevueltos, boolean confirmacionUsuario) {
-        if (!confirmacionUsuario) {
-            throw new RuntimeException("La confirmación del usuario es requerida para proceder con la reversión.");
-        }
-
-        long idVentaLong = (long) idVenta;
+    public boolean revertirVenta(ReversionVentaDTO reversionVentaDTO) {
+        long idVentaLong = (long) reversionVentaDTO.getIdVenta();
         Optional<Venta> optionalVenta = ventaRepository.findById(idVentaLong);
         if (!optionalVenta.isPresent()) {
             throw new RuntimeException("Error, No existe una Venta con este id.");
@@ -145,32 +141,26 @@ public class VentaService {
             throw new RuntimeException("Error, La venta fue realizada hace más de 3 meses.");
         }
 
-        List<DetalleVenta> detalles = detalleVentaRepository.findByIdventa(idVenta);
+        List<DetalleVenta> detalles = detalleVentaRepository.findByIdventa(reversionVentaDTO.getIdVenta());
         if (detalles.isEmpty()) {
             throw new RuntimeException("Error, No existe una Venta con este id.");
         }
 
-        for (ProductoRevertidoDTO producto : productosDevueltos) {
+        for (Integer producto : reversionVentaDTO.getDevuelto()) {
             boolean encontrado = false;
             for (DetalleVenta detalle : detalles) {
-                if (detalle.getIdarticulo() == producto.getIdArticulo()) {
+                if (detalle.getIdarticulo() == producto) {
                     if (detalle.getEstado() != null && detalle.getEstado() == 4) {
                         throw new RuntimeException("El articulo " + detalle.getIdarticulo() + " ya se encuentra devuelto");
                     }
 
-                    if (producto.getCantidad() > detalle.getUnidadesvendidas()) {
-                        throw new RuntimeException("Cantidad a devolver del articulo " + detalle.getIdarticulo() + " es mayor a la vendida.");
-                    }
-
-                    detalle.setUnidadesvendidas(detalle.getUnidadesvendidas() - producto.getCantidad());
-
-                    detalle.setEstado(4); // Considerar si este estado es adecuado o si se necesita otro estado
-                    detalle.setDetalleDevolucion(detalleDevolucion);
+                    detalle.setEstado(4);
+                    detalle.setDetalleDevolucion(reversionVentaDTO.getMotivoReversion());
                     detalleVentaRepository.save(detalle);
 
                     Articulo articulo = articuloRepository.findById(detalle.getIdarticulo())
                             .orElseThrow(() -> new RuntimeException("Artículo no encontrado con ID: " + detalle.getIdarticulo()));
-                    int nuevasUnidades = articulo.getUnidadesdisponibles() + producto.getCantidad();
+                    int nuevasUnidades = articulo.getUnidadesdisponibles() + detalle.getUnidadesvendidas();
                     articulo.setUnidadesdisponibles(nuevasUnidades);
                     articuloRepository.save(articulo);
 
@@ -180,7 +170,7 @@ public class VentaService {
             }
 
             if (!encontrado) {
-                throw new RuntimeException("Error, el id del artículo " + producto.getIdArticulo() + " no corresponde a los artículos de esta venta.");
+                throw new RuntimeException("Error, el id del artículo " + producto + " no corresponde a los artículos de esta venta.");
             }
         }
 
