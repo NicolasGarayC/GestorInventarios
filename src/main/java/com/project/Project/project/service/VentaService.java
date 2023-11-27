@@ -131,6 +131,17 @@ public class VentaService {
         }
 
         Venta venta = optionalVenta.get();
+
+        List<DetalleVenta> detalles = detalleVentaRepository.findByIdventa(reversionVentaDTO.getIdVenta());
+        if (detalles.isEmpty()) {
+            throw new RuntimeException("Error, No existe una Venta con este id.");
+        }
+
+        boolean esVentaConfirmada = detalles.stream().allMatch(detalle -> detalle.getEstado() == 2);
+        if (!esVentaConfirmada) {
+            throw new RuntimeException("Error, solo se pueden revertir ventas en estado confirmado.");
+        }
+
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String fechaEnBD = dateFormat.format(venta.getFechaVenta());
         LocalDate fechaBD = LocalDate.parse(fechaEnBD, DateTimeFormatter.ISO_LOCAL_DATE);
@@ -139,11 +150,6 @@ public class VentaService {
         int diferenciaMeses = periodo.getMonths();
         if (diferenciaMeses > 3) {
             throw new RuntimeException("Error, La venta fue realizada hace más de 3 meses.");
-        }
-
-        List<DetalleVenta> detalles = detalleVentaRepository.findByIdventa(reversionVentaDTO.getIdVenta());
-        if (detalles.isEmpty()) {
-            throw new RuntimeException("Error, No existe una Venta con este id.");
         }
 
         for (Integer producto : reversionVentaDTO.getDevuelto()) {
@@ -178,43 +184,47 @@ public class VentaService {
     }
 
 
-    public void actualizarEstadoVenta(int idVenta, articulosEstadoDTO nuevoEstado){
-        if(nuevoEstado.getEstado()==4){
+
+    public void actualizarEstadoVenta(int idVenta, articulosEstadoDTO nuevoEstado) {
+        if (nuevoEstado.getEstado() == 4) {
             throw new RuntimeException("Error, No puede hacer devoluciones a través de este modulo, use el modulo correcto.");
         }
-        List<DetalleVenta> detalleVenta= detalleVentaService.getDetallesVentaByIdcompra(idVenta);
-        if(!detalleVenta.isEmpty()){
-            for (DetalleVenta detalle : detalleVenta){
-                if(detalle.getEstado() == nuevoEstado.getEstado()){
+
+        List<DetalleVenta> detalleVenta = detalleVentaService.getDetallesVentaByIdcompra(idVenta);
+        if (!detalleVenta.isEmpty()) {
+            for (DetalleVenta detalle : detalleVenta) {
+                if (detalle.getEstado() == nuevoEstado.getEstado()) {
                     throw new RuntimeException("Error, esta venta ya tiene este estado.");
                 }
-                if(detalle.getIdarticulo() == nuevoEstado.getId()){
-                    if (detalle.getEstado()== 4 || detalle.getEstado()==3) {
+                if (detalle.getIdarticulo() == nuevoEstado.getId()) {
+                    if (detalle.getEstado() == 4 || detalle.getEstado() == 3) {
                         throw new RuntimeException("Error, la venta ya no puede cambiar de estado.");
                     }
-                    if(detalle.getEstado()==2 && !(nuevoEstado.getEstado()==4)){
+                    if (detalle.getEstado() == 2 && !(nuevoEstado.getEstado() == 4)) {
                         throw new RuntimeException("Error, las ventas confirmadas solo pueden devolverse.");
                     }
-                    if(detalle.getEstado()==1 && nuevoEstado.getEstado()==4){
+                    if (detalle.getEstado() == 1 && nuevoEstado.getEstado() == 4) {
                         throw new RuntimeException("Error, la venta no puede pasar de Pendiente a Devuelto.");
                     }
-                    if (nuevoEstado.getEstado()==3 && !(detalle.getEstado()==1)){
+                    if (nuevoEstado.getEstado() == 3 && !(detalle.getEstado() == 1)) {
                         throw new RuntimeException("Error, la venta solo puede cancelarse si su estado es Pendiente.");
                     }
-                    if(nuevoEstado.getEstado()>4){
+                    if (nuevoEstado.getEstado() > 4) {
                         throw new RuntimeException("Error, estado invalido para este proceso.");
                     }
                 }
             }
-            for (DetalleVenta detalle : detalleVenta){
-                if(detalle.getIdarticulo() == nuevoEstado.getId()) {
+
+            for (DetalleVenta detalle : detalleVenta) {
+                if (detalle.getIdarticulo() == nuevoEstado.getId()) {
                     detalle.setEstado(nuevoEstado.getEstado());
                     detalleVentaRepository.save(detalle);
                 }
             }
-        }else{
-            throw new RuntimeException("Error, compra inexistente." );
+        } else {
+            throw new RuntimeException("Error, compra inexistente.");
         }
     }
+
 
 }
