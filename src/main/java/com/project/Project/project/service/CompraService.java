@@ -125,6 +125,11 @@ public class CompraService {
         if(detalles.isEmpty()){
             throw new RuntimeException("Error, No existe una compra con este id. " );
         }
+        boolean esCompraConfirmada = detalles.stream().allMatch(detalle -> detalle.getEstado() == 2);
+        if (!esCompraConfirmada) {
+            throw new RuntimeException("Error, solo se pueden revertir compras en estado confirmado.");
+        }
+
         Boolean encontrado = false;
         for (DetalleCompra detalle : detalles) {
             try {
@@ -156,7 +161,7 @@ public class CompraService {
         List<DetalleCompra> detalleCompra= detalleCompraService.getDetallesCompraByIdcompra(idCompra);
         if(!detalleCompra.isEmpty()){
             for (DetalleCompra detalle : detalleCompra){
-                if(detalle.getEstado() == nuevoEstado.getEstado()){
+                if(nuevoEstado.getId() == detalle.getIdarticulo() && detalle.getEstado() == nuevoEstado.getEstado()){
                     throw new RuntimeException("Error, esta compra ya tiene este estado.");
                 }
                 if(detalle.getIdarticulo() == nuevoEstado.getId()){

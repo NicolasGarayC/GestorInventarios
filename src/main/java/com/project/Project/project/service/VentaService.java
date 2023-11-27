@@ -193,7 +193,7 @@ public class VentaService {
         List<DetalleVenta> detalleVenta = detalleVentaService.getDetallesVentaByIdcompra(idVenta);
         if (!detalleVenta.isEmpty()) {
             for (DetalleVenta detalle : detalleVenta) {
-                if (detalle.getEstado() == nuevoEstado.getEstado()) {
+                if(nuevoEstado.getId() == detalle.getIdarticulo() && detalle.getEstado() == nuevoEstado.getEstado()){
                     throw new RuntimeException("Error, esta venta ya tiene este estado.");
                 }
                 if (detalle.getIdarticulo() == nuevoEstado.getId()) {
