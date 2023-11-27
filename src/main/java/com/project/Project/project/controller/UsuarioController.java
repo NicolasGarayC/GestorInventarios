@@ -1,26 +1,23 @@
 package com.project.Project.project.controller;
-import com.project.Project.project.model.Usuario;
-import com.project.Project.project.model.UsuarioDAO;
-import com.project.Project.project.model.UsuarioRol;
+import com.project.Project.project.model.*;
 import com.project.Project.project.repository.UsuarioRepository;
-import com.project.Project.project.repository.UsuarioRolRepository;
-import com.project.Project.project.service.TokenGenerator;
-import com.project.Project.project.service.TokenGenerator;
-import com.project.Project.project.service.UsuarioService;
-import com.project.Project.project.service.EmailService;
+import com.project.Project.project.security.JwtService;
+import com.project.Project.project.service.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
-
+    private static final Logger logger = LoggerFactory.getLogger(UsuarioController.class);
     @Autowired
     private UsuarioRepository usuarioRepository;
 
@@ -28,13 +25,15 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @Autowired
-    private UsuarioRolRepository usuarioRolRepository;
+    private JwtService jwtService;
 
     @Autowired
     private EmailService emailService;
 
     @Autowired
     private TokenGenerator tokenGenerator;
+    private final PasswordEncoder passwordEncoder;
+
 
     @GetMapping("/getusuario/{id}")
     public ResponseEntity<Usuario> getUsuarioById(@PathVariable int id) {
@@ -44,11 +43,6 @@ public class UsuarioController {
         } else {
             return ResponseEntity.notFound().build();
         }
-    }
-    @GetMapping("/usuariosNativo/{userId}")
-    public List<Object[]> getUsuariosWithRol(@PathVariable int userId) {
-        List<Object[]> usuariosConRol = usuarioRepository.findUsuariosWithRolId(userId);
-        return usuariosConRol;
     }
 
     @PostMapping("/insertarUsuario")
@@ -60,8 +54,16 @@ public class UsuarioController {
         String nombre = (String) usuarioData.get("nombre");
         boolean cambiarClave = (boolean) usuarioData.get("cambiarClave");
         Date fechaUltimoCambioClave = new Date();
-
-        int idRol = (int) usuarioData.get("idRol");
+        Role rol;
+        if(((String) usuarioData.get("rol")).equals("ADMIN")){
+            rol = Role.ADMIN;
+        }else if(((String) usuarioData.get("rol")).equals("OPERATIVO")){
+            rol = Role.OPERATIVO;
+        }else if(((String) usuarioData.get("rol")).equals("AUDITOR")){
+            rol = Role.AUDITOR;
+        }else {
+            rol = Role.OPERATIVO;
+        }
 
         if (usuarioRepository.existsByCorreo(correo)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El correo ya está en uso.");
@@ -83,28 +85,36 @@ public class UsuarioController {
         }
 
         try {
-            Usuario usuario = new Usuario(correo, passwd, cedula, nombre, cambiarClave, fechaUltimoCambioClave, token);
-            UsuarioDAO nuevoUsuario = usuarioService.insertarUsuario(usuario);
+            Usuario user = Usuario.builder()
+                    .correo(correo)
+                    .passwd(passwordEncoder.encode(passwd))
+                    .cedula(cedula)
+                    .nombre(nombre)
+                    .estado("Preregistro")
+                    .intentosFallidos(0)
+                    .cambiarClave(cambiarClave)
+                    .fechaUltimoCambioClave(fechaUltimoCambioClave)
+                    .token(token)
+                    .rol(rol)
+                    .build();
 
-            UsuarioRol usuarioRol = new UsuarioRol();
-            usuarioRol.setIdUsuario(nuevoUsuario.getId());
-            usuarioRol.setIdRol(idRol);
-            usuarioRolRepository.save(usuarioRol);
+            usuarioService.insertarUsuario(user);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("Se ha registrado con éxito. Al correo sumistrado llegará un token de verificación para activar su cuenta");
+            return ResponseEntity.status(HttpStatus.CREATED).body("Se ha registrado con éxito. Al correo sumistrado llegará un token de verificación para activar su cuenta ");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No se pudo insertar el usuario: " + e.getMessage());
         }
     }
 
     @PostMapping("/authUsuario")
-    public ResponseEntity<String> validarUsuario(@RequestBody Map<String, Object> credenciales) {
+    public ResponseEntity<String> validarUsuario(@RequestBody LoginRequest request) {
         try {
-            String correo = (String) credenciales.get("correo");
-            String passwd = (String) credenciales.get("passwd");
+            String correo = request.getCorreo();
+            String passwd = request.getPasswd();
+            AuthResponse authResponse = usuarioService.validarUsuario(correo, passwd, request);
 
-            if (usuarioService.validarUsuario(correo, passwd)) {
-                return ResponseEntity.ok("Usuario Autenticado.");
+            if (authResponse != null) {
+                return ResponseEntity.ok("Usuario Autenticado.   token:" + authResponse.getToken());
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas.");
             }
@@ -164,6 +174,10 @@ public class UsuarioController {
     @PostMapping("/RehabilitarUsuario/{numeroToken}")
     public ResponseEntity<String> rehabilitarUsuario(@PathVariable("numeroToken") int numerotoken,@RequestBody Map<String, String> body){
         String contrasenia = body.get("contrasenia");
+        String valid = usuarioService.validarContrasena(contrasenia);
+        if(!(valid.equals("ok"))){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + valid);
+        }
         try{
             String resultado = usuarioService.recuperarContrasenia(numerotoken,contrasenia);
             if (resultado.equals("Contraseña actualizada con éxito.")) {
