@@ -159,12 +159,14 @@ public class CompraService {
             throw new RuntimeException("Error, No puede hacer devoluciones a través de este modulo, use el modulo correcto.");
         }
         List<DetalleCompra> detalleCompra= detalleCompraService.getDetallesCompraByIdcompra(idCompra);
+        boolean encontrado=false;
         if(!detalleCompra.isEmpty()){
             for (DetalleCompra detalle : detalleCompra){
-                if(nuevoEstado.getId() == detalle.getIdarticulo() && detalle.getEstado() == nuevoEstado.getEstado()){
-                    throw new RuntimeException("Error, esta compra ya tiene este estado.");
-                }
                 if(detalle.getIdarticulo() == nuevoEstado.getId()){
+                    encontrado = true;
+                    if(detalle.getEstado() == nuevoEstado.getEstado()){
+                        throw new RuntimeException("Error, esta compra ya tiene este estado.");
+                    }
                     if (detalle.getEstado()== 4 || detalle.getEstado()==3) {
                         throw new RuntimeException("Error, la compra ya no puede cambiar de estado.");
                     }
@@ -182,6 +184,10 @@ public class CompraService {
                     }
                 }
             }
+            if(!encontrado){
+                throw new RuntimeException("Error, no existe el articulo para esta venta.");
+            }
+
             for (DetalleCompra detalle : detalleCompra){
                 if(detalle.getIdarticulo() == nuevoEstado.getId()) {
                     detalle.setEstado(nuevoEstado.getEstado());

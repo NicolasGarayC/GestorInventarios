@@ -191,12 +191,14 @@ public class VentaService {
         }
 
         List<DetalleVenta> detalleVenta = detalleVentaService.getDetallesVentaByIdcompra(idVenta);
+        boolean encontrado=false;
         if (!detalleVenta.isEmpty()) {
             for (DetalleVenta detalle : detalleVenta) {
-                if(nuevoEstado.getId() == detalle.getIdarticulo() && detalle.getEstado() == nuevoEstado.getEstado()){
-                    throw new RuntimeException("Error, esta venta ya tiene este estado.");
-                }
                 if (detalle.getIdarticulo() == nuevoEstado.getId()) {
+                    encontrado = true;
+                    if(detalle.getEstado() == nuevoEstado.getEstado()){
+                        throw new RuntimeException("Error, esta venta ya tiene este estado.");
+                    }
                     if (detalle.getEstado() == 4 || detalle.getEstado() == 3) {
                         throw new RuntimeException("Error, la venta ya no puede cambiar de estado.");
                     }
@@ -214,7 +216,9 @@ public class VentaService {
                     }
                 }
             }
-
+            if(!encontrado){
+                throw new RuntimeException("Error, no existe el articulo para esta venta.");
+            }
             for (DetalleVenta detalle : detalleVenta) {
                 if (detalle.getIdarticulo() == nuevoEstado.getId()) {
                     detalle.setEstado(nuevoEstado.getEstado());
