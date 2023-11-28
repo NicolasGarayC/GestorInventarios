@@ -20,7 +20,7 @@ public class ApplicationConfig {
 
     private final UsuarioRepository userRepository;
 
-    @Bean
+    @Bean //mapeo de los servicios que se consumen
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception
     {
         return config.getAuthenticationManager();

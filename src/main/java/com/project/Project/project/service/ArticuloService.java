@@ -19,7 +19,6 @@ public class ArticuloService {
     @Autowired
     private CompraRepository compraRepository;
 
-
     public Integer guardarArticulo(ArticulosCompraDTO compraDTO) {
             Articulo articulo = compraDTO.getArticulo();
         // Intenta encontrar un artículo existente con los mismos atributos.
