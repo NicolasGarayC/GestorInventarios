@@ -36,9 +36,9 @@ class VentaControllerTest {
 
     @Test
     void createVenta_Success() {
+
         // Preparar datos de entrada y respuesta esperada
         VentaArticuloDTO ventaArticuloDTO = new VentaArticuloDTO();
-        // Configurar datos de ventaArticuloDTO...
 
         // Simular comportamiento del servicio
         doNothing().when(ventaService).createVenta(any(VentaArticuloDTO.class));
