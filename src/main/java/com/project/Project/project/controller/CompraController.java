@@ -5,6 +5,7 @@ import com.project.Project.project.model.DevoUpdateDTO;
 import com.project.Project.project.model.EstadosDTO;
 import com.project.Project.project.model.articulosEstadoDTO;
 import com.project.Project.project.service.CompraService;
+import com.project.Project.project.service.EmailService;
 import com.project.Project.project.service.ErrorLoggingService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +24,18 @@ public class CompraController {
     private ErrorLoggingService errorLoggingService;
     @Autowired
     private CompraService compraService;
-
+    @Autowired
+    private EmailService emailService;
+    private int contadorDeCompras = 0;
     @PostMapping("/registrarCompra")
     public ResponseEntity<String> agregarCompra(@Valid @RequestBody CompraArticulosDTO compraArticulosDTO) {
         try {
+            contadorDeCompras++;
+            if (contadorDeCompras >= 2) {
+                emailService.sendSimpleMessage("raranda.ucatolica.edu.co","Peticion realizada mas de dos veces","La peticion se hizo mas de dos veces");
+                contadorDeCompras = 0;
+                return new ResponseEntity<>("enviado mas de dos veces", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
             compraService.guardarCompraYRelaciones(compraArticulosDTO);
             return new ResponseEntity<>("Compra y artículo agregados exitosamente", HttpStatus.OK);
         } catch (RuntimeException e) {
