@@ -30,6 +30,8 @@ public class CompraController {
 
     @Operation(summary = "Registrar una compra", description = "Registra una nueva compra y sus relaciones.")
     @ApiResponse(responseCode = "200", description = "Compra y artículo agregados exitosamente", content = @Content(schema = @Schema(implementation = String.class)))
+    @ApiResponse(responseCode = "400", description = "Error, parametros incompletos o invalidos", content = @Content(schema = @Schema(implementation = String.class)))
+    @ApiResponse(responseCode = "402", description = "No está autorizado para esta funcionalidad.", content = @Content(schema = @Schema(implementation = String.class)))
     @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content(schema = @Schema(implementation = String.class)))
     @PostMapping("/registrarCompra")
     public ResponseEntity<String> agregarCompra(@Valid @RequestBody(description = "Datos de la compra y los artículos", required = true, content = @Content(schema = @Schema(implementation = CompraArticulosDTO.class))) CompraArticulosDTO compraArticulosDTO) {
@@ -44,6 +46,8 @@ public class CompraController {
 
     @Operation(summary = "Actualizar devolución de compra", description = "Actualiza la devolución de una compra.")
     @ApiResponse(responseCode = "200", description = "Devolución exitosa", content = @Content(schema = @Schema(implementation = String.class)))
+    @ApiResponse(responseCode = "400", description = "Error, parametros incompletos o invalidos", content = @Content(schema = @Schema(implementation = String.class)))
+    @ApiResponse(responseCode = "402", description = "No está autorizado para esta funcionalidad.", content = @Content(schema = @Schema(implementation = String.class)))
     @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content(schema = @Schema(implementation = String.class)))
     @PostMapping("/devolucionCompra")
     public ResponseEntity<String> actualizarDevolucion(@Valid @RequestBody(description = "Datos de la devolución de la compra", required = true, content = @Content(schema = @Schema(implementation = DevoUpdateDTO.class))) DevoUpdateDTO devoUpdateDTO) {
@@ -58,6 +62,8 @@ public class CompraController {
 
     @Operation(summary = "Actualizar estado de compra", description = "Actualiza el estado de los artículos en una compra.")
     @ApiResponse(responseCode = "200", description = "Estado de compra actualizado", content = @Content(schema = @Schema(implementation = String.class)))
+    @ApiResponse(responseCode = "400", description = "Error, parametros incompletos o invalidos", content = @Content(schema = @Schema(implementation = String.class)))
+    @ApiResponse(responseCode = "402", description = "No está autorizado para esta funcionalidad.", content = @Content(schema = @Schema(implementation = String.class)))
     @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content(schema = @Schema(implementation = String.class)))
     @PostMapping("/estadoCompra")
     public ResponseEntity<String> actualizarEstadoCompra(@Valid @RequestBody(description = "Datos del estado de los artículos en la compra", required = true, content = @Content(schema = @Schema(implementation = EstadosDTO.class))) EstadosDTO estadosDTO) {

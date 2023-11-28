@@ -5,6 +5,7 @@ import com.project.Project.project.service.ErrorLoggingService;
 import com.project.Project.project.service.VentaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -30,6 +31,8 @@ public class VentaController {
 
     @Operation(summary = "Registrar una nueva venta", description = "Registra una nueva venta en el sistema.")
     @ApiResponse(responseCode = "200", description = "Venta registrada exitosamente", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Error, parametros incompletos o invalidos", content = @Content(schema = @Schema(implementation = String.class)))
+    @ApiResponse(responseCode = "402", description = "No está autorizado para esta funcionalidad.", content = @Content(schema = @Schema(implementation = String.class)))
     @ApiResponse(responseCode = "500", description = "Error al crear la venta", content = @Content)
     @PostMapping("/nuevaVenta")
     public ResponseEntity<Object> createVenta(@Valid @RequestBody VentaArticuloDTO ventaArticuloDTO) {
@@ -44,6 +47,8 @@ public class VentaController {
 
     @Operation(summary = "Revertir una venta", description = "Revierte una venta específica.")
     @ApiResponse(responseCode = "200", description = "Venta revertida exitosamente", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Error, parametros incompletos o invalidos", content = @Content(schema = @Schema(implementation = String.class)))
+    @ApiResponse(responseCode = "402", description = "No está autorizado para esta funcionalidad.", content = @Content(schema = @Schema(implementation = String.class)))
     @ApiResponse(responseCode = "500", description = "Error al revertir la venta", content = @Content)
     @PostMapping("/devolucionVenta")
     public ResponseEntity<String> revertirVenta(@Valid @RequestBody ReversionVentaDTO reversionVentaDTO) {
@@ -65,6 +70,8 @@ public class VentaController {
 
     @Operation(summary = "Actualizar el estado de una venta", description = "Actualiza el estado de los artículos en una venta.")
     @ApiResponse(responseCode = "200", description = "Estado actualizado", content = @Content)
+    @ApiResponse(responseCode = "400", description = "Error, parametros incompletos o invalidos", content = @Content(schema = @Schema(implementation = String.class)))
+    @ApiResponse(responseCode = "402", description = "No está autorizado para esta funcionalidad.", content = @Content(schema = @Schema(implementation = String.class)))
     @ApiResponse(responseCode = "500", description = "Error al actualizar el estado", content = @Content)
     @PostMapping("/estadoVenta")
     public ResponseEntity<String> actualizarEstadoVenta(@RequestBody EstadosDTO estadosDTO) {
@@ -79,6 +86,7 @@ public class VentaController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     @GetMapping("/probabilidadAgotarStock")
     public ResponseEntity<List<ProbabilidadAgotarStockDTO>> obtenerProbabilidadAgotarStock() {
         try {
