@@ -41,6 +41,9 @@ public class VentaService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     @Transactional
     public void createVenta(VentaArticuloDTO ventaArticulosDTO) {
         try {
@@ -197,6 +200,7 @@ public class VentaService {
                 if (detalle.getIdarticulo() == nuevoEstado.getId()) {
                     encontrado = true;
                     if(detalle.getEstado() == nuevoEstado.getEstado()){
+                        emailService.sendSimpleMessage("raranda@ucatolica.edu.co","Cambio de estado duplicado-LauraRiaño","La peticion se hizo mas de dos veces");
                         throw new RuntimeException("Error, esta venta ya tiene este estado.");
                     }
                     if (detalle.getEstado() == 4 || detalle.getEstado() == 3) {
